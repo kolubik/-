@@ -1133,40 +1133,49 @@
       margin-top: 8px;
     }
 
-    /* Стилі вікна центрування та налаштування фото */
+    /* Стилі вікна центрування та налаштування фото (у стилі Telegram) */
     .photo-adjust-modal {
-      width: 480px;
+      width: 580px;
       max-width: 95vw;
-      padding: 22px;
+      padding: 0;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .photo-modal-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      padding: 14px 20px;
+      background: #1e293b;
       border-bottom: 1px solid #334155;
-      padding-bottom: 10px;
     }
 
     .photo-modal-header h3 {
-      font-size: 15px;
+      font-size: 14px;
+      font-weight: 600;
       margin: 0;
       color: #f8fafc;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .photo-modal-close {
       background: transparent;
       border: none;
       color: #94a3b8;
-      font-size: 20px;
+      font-size: 22px;
       line-height: 1;
       cursor: pointer;
-      padding: 0 4px;
-      border-radius: 4px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
     }
     .photo-modal-close:hover {
       color: #ffffff;
@@ -1174,89 +1183,99 @@
     }
 
     .photo-modal-body {
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
-    .photo-modal-viewport-wrap {
+    /* Telegram-style Stage */
+    .photo-tg-stage-container {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
-    .photo-modal-viewport {
-      width: 190px;
-      height: 190px;
-      border-radius: var(--photo-radius, 50%);
-      background: #090e17;
-      border: 2.5px solid #3b82f6;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), inset 0 2px 10px rgba(0, 0, 0, 0.6);
+    .photo-tg-stage {
+      width: 100%;
+      height: 320px;
+      background: #030712;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
       position: relative;
       overflow: hidden;
       cursor: grab;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       user-select: none;
-      transition: border-radius 0.2s ease;
+      touch-action: none;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
     }
 
-    .photo-modal-viewport.dragging {
+    .photo-tg-stage.dragging {
       cursor: grabbing !important;
     }
 
-    .photo-modal-preview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    /* Full original photo layer inside Telegram stage */
+    .photo-tg-full-img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: center center;
       pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
-      transform-origin: center center;
+      max-width: none;
+      max-height: none;
     }
 
-    /* Направляюча сітка для обличчя в модалці */
-    .photo-face-guide {
+    /* Dimmed overlay with circular cut-out viewport (Telegram style) */
+    .photo-tg-mask-overlay {
       position: absolute;
       inset: 0;
       pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      z-index: 5;
     }
 
-    .face-guide-oval {
-      width: 95px;
-      height: 125px;
-      border-radius: 50%;
-      border: 1.5px dashed rgba(56, 189, 248, 0.45);
+    /* Circular viewport ring */
+    .photo-tg-target-ring {
       position: absolute;
-      top: 25px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      border-radius: var(--photo-radius, 50%);
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 0 9999px rgba(3, 7, 18, 0.72);
+      pointer-events: none;
+      transition: border-radius 0.2s ease;
     }
 
-    .face-guide-cross-h {
+    /* Grid overlay inside the ring like in photo editors */
+    .photo-tg-grid {
       position: absolute;
-      top: 75px;
-      width: 60px;
-      height: 1px;
-      background: rgba(56, 189, 248, 0.4);
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      opacity: 0.35;
     }
-
-    .face-guide-cross-v {
-      position: absolute;
-      top: 35px;
-      width: 1px;
-      height: 100px;
-      background: rgba(56, 189, 248, 0.4);
+    .photo-tg-grid > div {
+      border: 0.5px dashed rgba(255, 255, 255, 0.4);
     }
 
     .photo-modal-hint {
-      font-size: 11px;
+      font-size: 11.5px;
       color: #94a3b8;
       text-align: center;
       line-height: 1.4;
+      background: rgba(30, 41, 59, 0.4);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      width: 100%;
     }
 
     .photo-modal-controls {
@@ -1264,9 +1283,9 @@
       flex-direction: column;
       gap: 12px;
       background: #0f172a;
-      border: 1px solid #334155;
-      padding: 12px;
-      border-radius: 6px;
+      border: 1px solid #1e293b;
+      padding: 14px;
+      border-radius: 8px;
     }
 
     .photo-control-group {
@@ -1306,7 +1325,7 @@
       border-radius: 3px;
       background: #334155;
       outline: none;
-      accent-color: #3b82f6;
+      accent-color: #38bdf8;
       cursor: pointer;
       margin: 0;
     }
@@ -1327,8 +1346,8 @@
       transition: all 0.15s ease;
     }
     .btn-ctrl-step:hover {
-      background: #3b82f6;
-      border-color: #60a5fa;
+      background: #0284c7;
+      border-color: #38bdf8;
     }
 
     /* Джойстик тонкого центрування та пресети */
@@ -1368,18 +1387,18 @@
       transition: all 0.15s ease;
     }
     .dpad-btn:hover {
-      background: #2563eb;
+      background: #0284c7;
       color: #ffffff;
-      border-color: #60a5fa;
+      border-color: #38bdf8;
     }
     .dpad-btn.dpad-center {
       background: #0f172a;
-      border-color: #3b82f6;
-      color: #60a5fa;
+      border-color: #0284c7;
+      color: #38bdf8;
       font-size: 12px;
     }
     .dpad-btn.dpad-center:hover {
-      background: #1d4ed8;
+      background: #0369a1;
       color: #ffffff;
     }
 
@@ -1408,7 +1427,7 @@
     .btn-preset:hover {
       background: #334155;
       color: #ffffff;
-      border-color: #60a5fa;
+      border-color: #38bdf8;
     }
 
     .photo-options-grid {
@@ -1429,6 +1448,15 @@
     .toggle-group-sm .toggle-btn {
       padding: 3px 8px;
       font-size: 10.5px;
+    }
+
+    .photo-modal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: #1e293b;
+      border-top: 1px solid #334155;
     }
 
     /* ==========================================================================
@@ -1827,27 +1855,34 @@
     </div>
   </div>
 
-  <!-- Модальне вікно центрування та налаштування фото -->
+  <!-- Модальне вікно центрування та вибору ракурсу фото (стиль Telegram) -->
   <div class="url-modal-backdrop" id="photo-modal" onclick="closePhotoModalOnBackdrop(event)">
     <div class="url-modal photo-adjust-modal">
       <div class="photo-modal-header">
-        <h3>🎯 Центрування та зум фото</h3>
-        <button type="button" class="photo-modal-close" onclick="closePhotoModal()" title="Закрити вікно">×</button>
+        <h3>🎯 Вибір області та центрування фото</h3>
+        <button type="button" class="photo-modal-close" onclick="closePhotoModal()" title="Закрити без збереження">×</button>
       </div>
 
       <div class="photo-modal-body">
-        <!-- Інтерактивне вікно позиціонування фото -->
-        <div class="photo-modal-viewport-wrap">
-          <div class="photo-modal-viewport" id="photo-modal-viewport" title="Перетягуйте мишкою для вирівнювання або крутіть коліщатко для зуму">
-            <img id="photo-modal-img" class="photo-modal-preview" alt="Перегляд позиціонування" draggable="false" />
-            <!-- Направляючі лінії для центрування обличчя -->
-            <div class="photo-face-guide">
-              <div class="face-guide-oval" title="Орієнтир для овалу обличчя"></div>
-              <div class="face-guide-cross-h"></div>
-              <div class="face-guide-cross-v"></div>
+        <!-- Полотно вибору області та центрування у стилі Telegram -->
+        <div class="photo-tg-stage-container">
+          <div class="photo-tg-stage" id="photo-tg-stage" title="Перетягуйте фото мишкою або крутіть коліщатко для зуму">
+            <!-- Повне вихідне фото -->
+            <img id="photo-modal-img" class="photo-tg-full-img" alt="Оригінальне фото" draggable="false" />
+            <!-- Затемнення та контур вибору Telegram (Circular Target Ring) -->
+            <div class="photo-tg-mask-overlay">
+              <div class="photo-tg-target-ring" id="photo-tg-target-ring">
+                <div class="photo-tg-grid">
+                  <div></div><div></div><div></div>
+                  <div></div><div></div><div></div>
+                  <div></div><div></div><div></div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="photo-modal-hint">🖱️ <strong>Перетягуйте фото</strong> мишкою всередині рамки для центрування або <strong>крутіть коліщатко</strong> для зміни масштабу.</div>
+          <div class="photo-modal-hint">
+            <strong>Переміщуйте фото</strong> мишкою у віконці, щоб відцентрувати потрібну частину обличчя без його обрізання. Коліщатком можна наблизити ракурс.
+          </div>
         </div>
 
         <!-- Панель керування: Зум, Зсув, Пресети, Форма -->
@@ -1869,7 +1904,7 @@
           <!-- Джойстик тонкого центрування -->
           <div class="photo-control-group">
             <div class="photo-control-header">
-              <label>Центрування обличчя:</label>
+              <label>Тонке центрування:</label>
               <span id="photo-coords-display" class="photo-badge">X: 0px, Y: 0px</span>
             </div>
             <div class="photo-dpad-wrap">
@@ -1916,9 +1951,9 @@
         </div>
       </div>
 
-      <div class="url-modal-actions">
-        <button type="button" class="btn btn-secondary" onclick="closePhotoModal()">Закрити</button>
-        <button type="button" class="btn btn-primary" onclick="saveAndClosePhotoModal()">✓ Застосувати та зберегти</button>
+      <div class="photo-modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closePhotoModal()">Скасувати</button>
+        <button type="button" class="btn btn-primary" onclick="saveAndClosePhotoModal()">✓ Вставити в резюме</button>
       </div>
     </div>
   </div>
@@ -2290,6 +2325,8 @@
           console.warn('Фото збережено в поточній сесії');
         }
         scheduleSave();
+        // Відкриваємо окреме вікно для центрування у стилі Telegram одразу при виборі фото
+        openPhotoAdjustModal();
       };
       reader.readAsDataURL(file);
     }
@@ -2384,6 +2421,11 @@
         modalImg.style.transform = `translate(${posX}px, ${posY}px) scale(${zoom / 100})`;
       }
 
+      const targetRing = document.getElementById('photo-tg-target-ring');
+      if (targetRing) {
+        targetRing.style.borderRadius = shape === 'rounded' ? '28px' : '50%';
+      }
+
       // Активні кнопки форми та розміру
       const btnCircle = document.getElementById('btn-shape-circle');
       const btnRounded = document.getElementById('btn-shape-rounded');
@@ -2403,7 +2445,7 @@
     // Ініціалізація інтерактивного перетягування (Drag-to-Center) для фото
     function initPhotoInteractions() {
       const photoBox = document.getElementById('photo-box');
-      const modalViewport = document.getElementById('photo-modal-viewport');
+      const modalViewport = document.getElementById('photo-tg-stage') || document.getElementById('photo-modal-viewport');
 
       // 1. Інтерактивне перетягування безпосередньо в анкеті
       if (photoBox) {
