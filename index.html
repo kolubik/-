@@ -1436,6 +1436,25 @@
       gap: 12px;
     }
 
+    .photo-options-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.3fr;
+      gap: 12px;
+    }
+
+    .photo-res-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-weight: 500;
+    }
+
     .sub-label {
       font-size: 10.5px;
       color: #94a3b8;
@@ -1859,7 +1878,7 @@
   <div class="url-modal-backdrop" id="photo-modal" onclick="closePhotoModalOnBackdrop(event)">
     <div class="url-modal photo-adjust-modal">
       <div class="photo-modal-header">
-        <h3>🎯 Вибір області та центрування фото</h3>
+        <h3>🎯 Вибір області та центрування фото <span id="photo-natural-res-badge" class="photo-res-badge" style="display:none;"></span></h3>
         <button type="button" class="photo-modal-close" onclick="closePhotoModal()" title="Закрити без збереження">×</button>
       </div>
 
@@ -1881,7 +1900,7 @@
             </div>
           </div>
           <div class="photo-modal-hint">
-            <strong>Переміщуйте фото</strong> мишкою у віконці, щоб відцентрувати потрібну частину обличчя без його обрізання. Коліщатком можна наблизити ракурс.
+            <strong>Переміщуйте фото</strong> мишкою у віконці, щоб відцентрувати потрібну частину обличчя без його обрізання. Коліщатком або повзунком можна наблизити чи <strong>віддалити</strong> ракурс.
           </div>
         </div>
 
@@ -1895,9 +1914,9 @@
               <span id="photo-zoom-display" class="photo-badge">100%</span>
             </div>
             <div class="photo-zoom-row">
-              <button type="button" class="btn-ctrl-step" onclick="stepPhotoZoom(-5)" title="Зменшити">−</button>
-              <input type="range" id="photo-zoom-slider" min="100" max="300" step="2" value="100" oninput="onPhotoZoomChange(this.value)">
-              <button type="button" class="btn-ctrl-step" onclick="stepPhotoZoom(5)" title="Збільшити">+</button>
+              <button type="button" class="btn-ctrl-step" onclick="stepPhotoZoom(-5)" title="Віддалити (зменшити)">−</button>
+              <input type="range" id="photo-zoom-slider" min="40" max="300" step="2" value="100" oninput="onPhotoZoomChange(this.value)">
+              <button type="button" class="btn-ctrl-step" onclick="stepPhotoZoom(5)" title="Наблизити (збільшити)">+</button>
             </div>
           </div>
 
@@ -1922,14 +1941,16 @@
               <div class="photo-presets">
                 <button type="button" class="btn-preset" onclick="applyPhotoPreset('face')" title="Оптимально центрувати портрет, щоб обличчя було повністю видно">👤 Обличчя вгорі (портрет)</button>
                 <button type="button" class="btn-preset" onclick="applyPhotoPreset('center')" title="Скинути зсув рівно по центру кадру">🎯 Точно по центру</button>
-                <button type="button" class="btn-preset" onclick="applyPhotoPreset('reset')" title="Скинути масштаб та зсув до 100%">🔄 Скинути все</button>
+                <button type="button" class="btn-preset" onclick="applyPhotoPreset('wide')" title="Віддалити фото (75%), щоб вмістити більше простору">🔍 Віддалити огляд (75%)</button>
+                <button type="button" class="btn-preset" id="btn-preset-2362" onclick="applyPhotoPreset('2362x3543')" title="Спеціальне центрування під фото 2362×3543 (пропорція 2:3, фокус на верхній третині портрета)">📐 Під 2362×3543 (портрет 2:3)</button>
+                <button type="button" class="btn-preset" onclick="applyPhotoPreset('reset')" title="Скинути масштаб та зсув до 100%">🔄 Скинути все (100%)</button>
               </div>
             </div>
           </div>
 
-          <!-- Форма та розмір аватара -->
+          <!-- Форма, розмір та якість експорту аватара -->
           <div class="photo-control-group">
-            <div class="photo-options-grid">
+            <div class="photo-options-grid-3">
               <div>
                 <label class="sub-label">Форма рамки:</label>
                 <div class="toggle-group toggle-group-sm">
@@ -1943,6 +1964,14 @@
                   <button type="button" class="toggle-btn" id="btn-size-sm" onclick="setPhotoSize(76)">76px</button>
                   <button type="button" class="toggle-btn active" id="btn-size-md" onclick="setPhotoSize(90)">90px</button>
                   <button type="button" class="toggle-btn" id="btn-size-lg" onclick="setPhotoSize(104)">104px</button>
+                </div>
+              </div>
+              <div>
+                <label class="sub-label">Роздільна здатність (Якість):</label>
+                <div class="toggle-group toggle-group-sm">
+                  <button type="button" class="toggle-btn" id="btn-res-800" onclick="setPhotoExportRes(800)" title="Стандартна чіткість 800×800px">800px</button>
+                  <button type="button" class="toggle-btn active" id="btn-res-1200" onclick="setPhotoExportRes(1200)" title="Висока роздільна здатність 1200×1200px (HD)">1200px HD</button>
+                  <button type="button" class="toggle-btn" id="btn-res-2362" onclick="setPhotoExportRes(2362)" title="Ультра-якість 2362px (Ultra HD) без втрати деталей оригіналу">2362px UHD</button>
                 </div>
               </div>
             </div>
@@ -1978,7 +2007,10 @@
       photoX: 0,
       photoY: 0,
       photoShape: 'circle',
-      photoSize: 90
+      photoSize: 90,
+      photoExportRes: 1200,
+      photoNaturalWidth: 0,
+      photoNaturalHeight: 0
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -2325,8 +2357,23 @@
           console.warn('Фото збережено в поточній сесії');
         }
         scheduleSave();
-        // Відкриваємо окреме вікно для центрування у стилі Telegram одразу при виборі фото
-        openPhotoAdjustModal();
+        // Перевіряємо роздільну здатність завантаженого фото
+        const checkImg = new Image();
+        checkImg.onload = function() {
+          const nw = checkImg.naturalWidth || checkImg.width;
+          const nh = checkImg.naturalHeight || checkImg.height;
+          appSettings.photoNaturalWidth = nw;
+          appSettings.photoNaturalHeight = nh;
+          // Якщо це фото 2362x3543 або портрет 2:3, автоматично встановлюємо оптимальний ракурс та UHD якість
+          const ratio = nw / nh;
+          const isApprox2by3 = Math.abs(ratio - (2362 / 3543)) < 0.08;
+          if (isApprox2by3 || (nw === 2362 && nh === 3543) || (nw >= 2000 && nh >= 3000)) {
+            appSettings.photoExportRes = 2362;
+            appSettings.photoY = 24; // портретне центрування обличчя
+          }
+          openPhotoAdjustModal();
+        };
+        checkImg.src = dataUrl;
       };
       reader.readAsDataURL(file);
     }
@@ -2440,6 +2487,13 @@
         const targetVal = s === 'sm' ? 76 : (s === 'md' ? 90 : 104);
         b.classList.toggle('active', size === targetVal);
       });
+
+      // Активні кнопки роздільної здатності
+      const res = appSettings.photoExportRes || 1200;
+      [800, 1200, 2362].forEach(r => {
+        const b = document.getElementById(`btn-res-${r}`);
+        if (b) b.classList.toggle('active', res === r);
+      });
     }
 
     // Ініціалізація інтерактивного перетягування (Drag-to-Center) для фото
@@ -2515,7 +2569,7 @@
           e.preventDefault();
           const step = e.deltaY < 0 ? 5 : -5;
           const currentZoom = appSettings.photoZoom || 100;
-          appSettings.photoZoom = Math.min(300, Math.max(100, currentZoom + step));
+          appSettings.photoZoom = Math.min(300, Math.max(40, currentZoom + step));
           applyPhotoStyles();
           saveSettings();
           scheduleSave();
@@ -2571,7 +2625,7 @@
           e.preventDefault();
           const step = e.deltaY < 0 ? 5 : -5;
           const currentZoom = appSettings.photoZoom || 100;
-          appSettings.photoZoom = Math.min(300, Math.max(100, currentZoom + step));
+          appSettings.photoZoom = Math.min(300, Math.max(40, currentZoom + step));
           applyPhotoStyles();
           saveSettings();
         }, { passive: false });
@@ -2583,11 +2637,43 @@
       const img = document.getElementById('user-photo-img');
       const modalImg = document.getElementById('photo-modal-img');
       const modal = document.getElementById('photo-modal');
+      const resBadge = document.getElementById('photo-natural-res-badge');
       if (!img || !img.src) return;
 
       if (modalImg) {
         modalImg.src = img.src;
       }
+
+      // Визначаємо природну роздільну здатність та пропорцію фото
+      const temp = new Image();
+      temp.onload = function() {
+        const nw = temp.naturalWidth || temp.width;
+        const nh = temp.naturalHeight || temp.height;
+        appSettings.photoNaturalWidth = nw;
+        appSettings.photoNaturalHeight = nh;
+        if (resBadge) {
+          resBadge.innerText = `${nw}×${nh} px`;
+          resBadge.style.display = 'inline-block';
+          resBadge.title = `Оригінальний розмір файлу: ${nw}×${nh} пікселів`;
+        }
+        // Якщо фото має пропорцію близько 2:3 або розмір 2362x3543, підсвічуємо спеціальний пресет
+        const presetBtn = document.getElementById('btn-preset-2362');
+        if (presetBtn) {
+          const ratio = nw / nh;
+          const isApprox2by3 = Math.abs(ratio - (2362 / 3543)) < 0.08;
+          if (isApprox2by3 || (nw === 2362 && nh === 3543)) {
+            presetBtn.style.borderColor = '#38bdf8';
+            presetBtn.style.color = '#38bdf8';
+            presetBtn.style.background = 'rgba(56, 189, 248, 0.12)';
+          } else {
+            presetBtn.style.borderColor = '';
+            presetBtn.style.color = '';
+            presetBtn.style.background = '';
+          }
+        }
+      };
+      temp.src = img.src;
+
       applyPhotoStyles();
       if (modal) modal.classList.add('open');
     }
@@ -2611,14 +2697,14 @@
 
     // Керування зумом у модалці
     function onPhotoZoomChange(val) {
-      appSettings.photoZoom = parseInt(val, 10) || 100;
+      appSettings.photoZoom = Math.min(300, Math.max(40, parseInt(val, 10) || 100));
       applyPhotoStyles();
       saveSettings();
     }
 
     function stepPhotoZoom(delta) {
       const cur = appSettings.photoZoom || 100;
-      appSettings.photoZoom = Math.min(300, Math.max(100, cur + delta));
+      appSettings.photoZoom = Math.min(300, Math.max(40, cur + delta));
       applyPhotoStyles();
       saveSettings();
     }
@@ -2648,11 +2734,30 @@
       } else if (preset === 'center') {
         appSettings.photoX = 0;
         appSettings.photoY = 0;
+      } else if (preset === 'wide') {
+        appSettings.photoZoom = 75;
+        appSettings.photoX = 0;
+        appSettings.photoY = 0;
+      } else if (preset === '2362x3543') {
+        // Спеціальний пресет під вертикальне студійне фото 2362x3543 (співвідношення 2:3)
+        // Для співвідношення 2:3 обличчя зазвичай розташоване у верхній частині кадру
+        appSettings.photoZoom = 100;
+        appSettings.photoX = 0;
+        appSettings.photoY = 24; // Зсуваємо фото вниз на 24px, щоб портрет/обличчя було ідеально відцентровано у вікні
+        appSettings.photoExportRes = 2362; // Автоматично перемикаємо роздільну здатність на ультра-чіткість 2362px
       } else if (preset === 'reset') {
         appSettings.photoZoom = 100;
         appSettings.photoX = 0;
         appSettings.photoY = 0;
       }
+      applyPhotoStyles();
+      saveSettings();
+      scheduleSave();
+    }
+
+    // Вибір роздільної здатності експорту фото (800, 1200, 2362 px)
+    function setPhotoExportRes(res) {
+      appSettings.photoExportRes = parseInt(res, 10) || 1200;
       applyPhotoStyles();
       saveSettings();
       scheduleSave();
@@ -2683,15 +2788,27 @@
         tempImg.crossOrigin = 'anonymous';
         tempImg.onload = function() {
           try {
+            const natW = tempImg.naturalWidth || tempImg.width;
+            const natH = tempImg.naturalHeight || tempImg.height;
+
+            // Визначаємо роздільну здатність полотна на основі вибору користувача або оригінального фото
+            // Якщо фото високої роздільної здатності (наприклад, 2362x3543), використовуємо відповідний розмір без стиснення деталей
+            let targetSize = appSettings.photoExportRes || 1200;
+            if (targetSize === 2362 && natW > 0) {
+              targetSize = Math.max(targetSize, Math.min(natW, 2362));
+            }
+
             const canvas = document.createElement('canvas');
-            const size = 500; // Висока роздільна здатність для презентації
-            canvas.width = size;
-            canvas.height = size;
+            canvas.width = targetSize;
+            canvas.height = targetSize;
             const ctx = canvas.getContext('2d');
             if (!ctx) return resolve(img.src);
 
-            const natW = tempImg.naturalWidth || tempImg.width;
-            const natH = tempImg.naturalHeight || tempImg.height;
+            // Високоякісна інтерполяція зображення
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            const size = targetSize;
 
             // Емуляція CSS object-fit: cover
             const coverScale = Math.max(size / natW, size / natH);
@@ -2710,14 +2827,15 @@
             const drawX = (size - finalW) / 2 + offsetX;
             const drawY = (size - finalH) / 2 + offsetY;
 
-            // Маскування форми (коло або закруглений прямокутник)
+            // Маскування форми (коло або закруглений прямокутник з радіусом пропорційним розміру)
             if (appSettings.photoShape === 'circle') {
               ctx.beginPath();
               ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
               ctx.closePath();
               ctx.clip();
             } else if (appSettings.photoShape === 'rounded') {
-              const r = 50;
+              // Радіус закруглення пропорційний розміру полотна
+              const r = Math.round(size * 0.16);
               ctx.beginPath();
               ctx.moveTo(r, 0);
               ctx.lineTo(size - r, 0);
