@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Резюме — Шеховцов Максим Артемович</title>
+  <meta name="description" content="Резюме курсанта 2 курсу ХНУВС за спеціальністю Кібербезпека — Шеховцов Максим Артемович.">
+  <meta property="og:title" content="Резюме — Шеховцов Максим Артемович">
+  <meta property="og:description" content="Резюме курсанта 2 курсу ХНУВС за спеціальністю Кібербезпека — Шеховцов Максим Артемович.">
+  <style>
+    /* ==========================================================================
+       Базові налаштування та типографіка
+       ========================================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+      background-color: #0b0f17;
+      color: #1a202c;
+      line-height: 1.45;
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Панель керування для перегляду на екрані (приховується при друці) */
+    .screen-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      padding: 12px 20px;
+      color: #e5e7eb;
+    }
+
+    .screen-toolbar span {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1d4ed8;
+      color: #ffffff;
+      border: 1px solid #2563eb;
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-print:hover {
+      background: #2563eb;
+    }
+
+    .btn-print:active {
+      transform: scale(0.98);
+    }
+
+    .page-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 15px 40px;
+      min-height: 100vh;
+    }
+
+    /* ==========================================================================
+       Контейнер А4 (210mm x 297mm)
+       ========================================================================== */
+    .resume-a4 {
+      width: 210mm;
+      min-height: 297mm;
+      height: 297mm;
+      max-height: 297mm;
+      display: flex;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ==========================================================================
+       Ліва колонка: Сайдбар (33% ширини)
+       ========================================================================== */
+    .sidebar {
+      width: 33%;
+      background-color: #0c1829;
+      color: #ffffff;
+      padding: 26mm 14mm 22mm 16mm;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      border-right: 1px solid #16263d;
+    }
+
+    /* Фото placeholder */
+    .photo-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .photo-placeholder {
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 2px solid #334155;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      padding: 8px;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .photo-placeholder svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: #64748b;
+      stroke-width: 1.8;
+      margin-bottom: 4px;
+    }
+
+    /* Заголовки блоків у сайдбарі */
+    .sidebar-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #ffffff;
+      padding-bottom: 5px;
+      border-bottom: 1.5px solid #2563eb;
+      margin-bottom: 9px;
+    }
+
+    /* Контакти */
+    .contact-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .contact-item {
+      display: flex;
+      flex-direction: column;
+      font-size: 11.5px;
+      line-height: 1.35;
+    }
+
+    .contact-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .contact-value {
+      color: #f1f5f9;
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    /* Навички */
+    .skills-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .skill-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .skill-name {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #60a5fa;
+      letter-spacing: 0.01em;
+    }
+
+    .skill-desc {
+      font-size: 11px;
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+
+    /* Посилання */
+    .links-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .link-item {
+      display: flex;
+      flex-direction: column;
+      font-size: 11px;
+    }
+
+    .link-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #94a3b8;
+    }
+
+    .link-url {
+      color: #93c5fd;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    /* ==========================================================================
+       Права колонка: Основна частина (67% ширини)
+       ========================================================================== */
+    .main-content {
+      width: 67%;
+      background-color: #ffffff;
+      color: #1e293b;
+      padding: 26mm 18mm 22mm 18mm;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Заголовок та ПІБ */
+    .header-section {
+      border-bottom: 2px solid #0c1829;
+      padding-bottom: 14px;
+    }
+
+    .candidate-name {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #0c1829;
+      margin-bottom: 6px;
+    }
+
+    .candidate-status {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #1d4ed8;
+      letter-spacing: 0.02em;
+    }
+
+    /* Заголовки блоків в основній частині */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #0c1829;
+      padding-bottom: 4px;
+      border-bottom: 1.5px solid #0c1829;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background-color: #1d4ed8;
+    }
+
+    /* Блок: Цілі */
+    .goals-text {
+      font-size: 12.5px;
+      color: #334155;
+      text-align: justify;
+      line-height: 1.55;
+    }
+
+    /* Блок: Освіта */
+    .education-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .edu-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .edu-sub {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    .edu-period {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: #64748b;
+      margin-top: 1px;
+    }
+
+    .edu-note {
+      font-size: 12px;
+      color: #475569;
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    /* Блок: Досягнення */
+    .achievements-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .achievement-item {
+      position: relative;
+      padding-left: 14px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: #334155;
+    }
+
+    .achievement-item::before {
+      content: "▪";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      color: #1d4ed8;
+      font-size: 14px;
+    }
+
+    .achievement-item strong {
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    /* Нижній офіційний колонтитул */
+    .document-footer {
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9.5px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       Стилі для друку та збереження в PDF (@media print)
+       ========================================================================== */
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    @media print {
+      html, body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: none !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .page-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+        display: block !important;
+      }
+
+      .resume-a4 {
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .sidebar {
+        background-color: #0c1829 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .main-content {
+        background-color: #ffffff !important;
+        color: #1e293b !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Верхня панель дій для веб-перегляду -->
+  <div class="screen-toolbar no-print">
+    <span>Стандартний формат A4 (210 × 297 мм) • Резюме для структур кібербезпеки</span>
+    <button class="btn-print" onclick="window.print()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+      </svg>
+      Друк / Зберегти в PDF
+    </button>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="resume-a4">
+      
+      <!-- ЛІВА КОЛОНКА (САЙДБАР) -->
+      <aside class="sidebar">
+        <!-- Фото placeholder -->
+        <div class="photo-wrapper">
+          <div class="photo-placeholder">
+            <svg viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>Місце для фото</span>
+          </div>
+        </div>
+
+        <!-- Контакти -->
+        <section>
+          <h2 class="sidebar-section-title">Контакти</h2>
+          <ul class="contact-list">
+            <li class="contact-item">
+              <span class="contact-label">Телефон</span>
+              <span class="contact-value">+380 (XX) XXX-XX-XX</span>
+            </li>
+            <li class="contact-item">
+              <span class="contact-label">Email</span>
+              <span class="contact-value">m.shekhovtsov@example.com</span>
+            </li>
+            <li class="contact-item">
+              <span class="contact-label">Telegram</span>
+              <span class="contact-value">@shekhovtsov_m</span>
+            </li>
+            <li class="contact-item">
+              <span class="contact-label">Локація</span>
+              <span class="contact-value">Україна</span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- Навички -->
+        <section>
+          <h2 class="sidebar-section-title">Навички</h2>
+          <div class="skills-group">
+            <div class="skill-block">
+              <div class="skill-name">Програмування</div>
+              <div class="skill-desc">Python (PyCryptodome, pwntools)</div>
+            </div>
+
+            <div class="skill-block">
+              <div class="skill-name">OSINT</div>
+              <div class="skill-desc">Аналіз цифрового сліду, розвідка за відкритими джерелами</div>
+            </div>
+
+            <div class="skill-block">
+              <div class="skill-name">Криптографія</div>
+              <div class="skill-desc">Вирішення завдань (CryptoHack), аналіз алгоритмів (RSA, XOR, еліптичні криві)</div>
+            </div>
+
+            <div class="skill-block">
+              <div class="skill-name">Бази даних та бекенд</div>
+              <div class="skill-desc">Google Firebase, Firestore</div>
+            </div>
+
+            <div class="skill-block">
+              <div class="skill-name">ОС та адміністрування</div>
+              <div class="skill-desc">Оптимізація та адміністрування ОС (Linux / Windows)</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Посилання -->
+        <section>
+          <h2 class="sidebar-section-title">Посилання</h2>
+          <ul class="links-list">
+            <li class="link-item">
+              <span class="link-title">GitHub</span>
+              <span class="link-url">github.com/shekhovtsov</span>
+            </li>
+            <li class="link-item">
+              <span class="link-title">LinkedIn</span>
+              <span class="link-url">linkedin.com/in/shekhovtsov</span>
+            </li>
+            <li class="link-item">
+              <span class="link-title">CryptoHack</span>
+              <span class="link-url">cryptohack.org/user/shekhovtsov</span>
+            </li>
+          </ul>
+        </section>
+      </aside>
+
+      <!-- ПРАВА КОЛОНКА (ОСНОВНА ЧАСТИНА) -->
+      <main class="main-content">
+        <!-- Заголовок / ПІБ -->
+        <header class="header-section">
+          <h1 class="candidate-name">Шеховцов<br>Максим Артемович</h1>
+          <div class="candidate-status">Курсант 2 курсу (спеціальність ІТ та Кібербезпека)</div>
+        </header>
+
+        <!-- Цілі -->
+        <section>
+          <h2 class="section-title">Цілі та професійний профіль</h2>
+          <p class="goals-text">
+            Опанувати передові інструменти кіберрозвідки та цифрової криміналістики. Здобути глибокі практичні навички в аналізі даних та програмуванні для ефективної протидії кіберзагрозам та захисту інформаційної інфраструктури.
+          </p>
+        </section>
+
+        <!-- Освіта -->
+        <section>
+          <h2 class="section-title">Освіта</h2>
+          <div class="education-item">
+            <div class="edu-title">Харківський національний університет внутрішніх справ (ХНУВС)</div>
+            <div class="edu-sub">2 курс, спеціальність "Кібербезпека"</div>
+            <div class="edu-period">2024 р. — теперішній час</div>
+            <div class="edu-note">Підготовка фахівців для сектору безпеки та оборони України, профільні дисципліни з кіберзахисту, криптографії та мережевої безпеки.</div>
+          </div>
+        </section>
+
+        <!-- Досягнення -->
+        <section>
+          <h2 class="section-title">Досягнення та практичний досвід</h2>
+          <ul class="achievements-list">
+            <li class="achievement-item">
+              <strong>Науково-дослідна діяльність:</strong> Розробка власного наукового дослідження в рамках проєкту "UNIVERSAL" (напрямок OSINT та цифрові сліди).
+            </li>
+            <li class="achievement-item">
+              <strong>Практична підготовка:</strong> Успішне проходження ознайомчої практики (серпень 2026 р.).
+            </li>
+            <li class="achievement-item">
+              <strong>Прикладна криптографія та автоматизація:</strong> Вирішення прикладних криптографічних задач та розробка скриптів для автоматизації процесів.
+            </li>
+          </ul>
+        </section>
+
+        <!-- Офіційний колонтитул -->
+        <footer class="document-footer">
+          <span>Спеціалізоване резюме • Стандарт силових відомств</span>
+          <span>Формат A4 • 1 сторінка</span>
+        </footer>
+      </main>
+
+    </div>
+  </div>
+
+</body>
+</html>
+
+

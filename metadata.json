@@ -1,0 +1,6 @@
+{
+  "name": "Резюме — Шеховцов Максим Артемович",
+  "description": "Односторінкове структуроване резюме формату А4 для фахівця з кібербезпеки (курсант ХНУВС).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
