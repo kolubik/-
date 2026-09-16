@@ -648,7 +648,7 @@
       flex-shrink: 0;
     }
 
-    /* Фото placeholder та аватар */
+    /* Фото placeholder та аватар з підтримкою центрування та зуму */
     .photo-wrapper {
       display: flex;
       flex-direction: column;
@@ -658,9 +658,9 @@
     }
 
     .photo-container {
-      width: clamp(74px, 9vw, 98px);
-      height: clamp(74px, 9vw, 98px);
-      border-radius: 50%;
+      width: var(--photo-size, clamp(74px, 9vw, 98px));
+      height: var(--photo-size, clamp(74px, 9vw, 98px));
+      border-radius: var(--photo-radius, 50%);
       background: #1e293b;
       border: 2px solid #334155;
       display: flex;
@@ -672,37 +672,64 @@
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.02em;
-      padding: 4px;
+      padding: 0;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
       position: relative;
       cursor: pointer;
       overflow: hidden;
-      transition: border-color 0.2s ease;
+      transition: border-color 0.2s ease, border-radius 0.2s ease, width 0.2s ease, height 0.2s ease;
+      user-select: none;
     }
 
     .photo-container:hover {
       border-color: #3b82f6;
     }
 
-    body.is-editing .photo-container:hover::after {
-      content: "Змінити";
+    .photo-container.has-photo {
+      cursor: grab;
+    }
+
+    .photo-container.has-photo.dragging {
+      cursor: grabbing !important;
+    }
+
+    /* Підказка щодо перетягування для центрування на фото */
+    .photo-drag-badge {
+      display: none;
       position: absolute;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.75);
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(4px);
       color: #ffffff;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 2px 6px;
+      border-radius: 10px;
+      pointer-events: none;
+      white-space: nowrap;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      z-index: 10;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    body.is-editing .photo-container.has-photo:hover .photo-drag-badge {
+      display: block;
     }
 
     .photo-preview {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 50%;
+      border-radius: inherit;
       display: none;
+      transform: translate(var(--photo-x, 0px), var(--photo-y, 0px)) scale(calc(var(--photo-zoom, 100) / 100));
+      transform-origin: center center;
+      user-select: none;
+      -webkit-user-drag: none;
+      pointer-events: none;
+      transition: transform 0.05s ease-out;
     }
 
     .photo-placeholder-content {
@@ -710,6 +737,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 4px;
     }
 
     .photo-placeholder-content svg {
@@ -723,8 +751,10 @@
 
     .photo-actions {
       display: none;
-      gap: 6px;
+      gap: 5px;
       margin-top: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     body.is-editing .photo-actions {
@@ -739,10 +769,24 @@
       padding: 2px 6px;
       border-radius: 4px;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
     }
     .btn-photo-mini:hover {
       color: #ffffff;
       background: #334155;
+    }
+    .btn-photo-mini.btn-photo-center {
+      background: #1e3a8a;
+      color: #bfdbfe;
+      border-color: #3b82f6;
+    }
+    .btn-photo-mini.btn-photo-center:hover {
+      background: #2563eb;
+      color: #ffffff;
     }
 
     /* Заголовки блоків у сайдбарі */
@@ -1089,6 +1133,304 @@
       margin-top: 8px;
     }
 
+    /* Стилі вікна центрування та налаштування фото */
+    .photo-adjust-modal {
+      width: 480px;
+      max-width: 95vw;
+      padding: 22px;
+    }
+
+    .photo-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+
+    .photo-modal-header h3 {
+      font-size: 15px;
+      margin: 0;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .photo-modal-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+      border-radius: 4px;
+    }
+    .photo-modal-close:hover {
+      color: #ffffff;
+      background: #334155;
+    }
+
+    .photo-modal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .photo-modal-viewport-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photo-modal-viewport {
+      width: 190px;
+      height: 190px;
+      border-radius: var(--photo-radius, 50%);
+      background: #090e17;
+      border: 2.5px solid #3b82f6;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), inset 0 2px 10px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      transition: border-radius 0.2s ease;
+    }
+
+    .photo-modal-viewport.dragging {
+      cursor: grabbing !important;
+    }
+
+    .photo-modal-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      transform-origin: center center;
+    }
+
+    /* Направляюча сітка для обличчя в модалці */
+    .photo-face-guide {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .face-guide-oval {
+      width: 95px;
+      height: 125px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(56, 189, 248, 0.45);
+      position: absolute;
+      top: 25px;
+    }
+
+    .face-guide-cross-h {
+      position: absolute;
+      top: 75px;
+      width: 60px;
+      height: 1px;
+      background: rgba(56, 189, 248, 0.4);
+    }
+
+    .face-guide-cross-v {
+      position: absolute;
+      top: 35px;
+      width: 1px;
+      height: 100px;
+      background: rgba(56, 189, 248, 0.4);
+    }
+
+    .photo-modal-hint {
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .photo-modal-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .photo-control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .photo-control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .photo-badge {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #334155;
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 10.5px;
+      font-family: monospace;
+    }
+
+    .photo-zoom-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photo-zoom-row input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: #334155;
+      outline: none;
+      accent-color: #3b82f6;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .btn-ctrl-step {
+      width: 26px;
+      height: 26px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #ffffff;
+      border-radius: 4px;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .btn-ctrl-step:hover {
+      background: #3b82f6;
+      border-color: #60a5fa;
+    }
+
+    /* Джойстик тонкого центрування та пресети */
+    .photo-dpad-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .photo-dpad {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .dpad-mid-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .dpad-btn {
+      width: 28px;
+      height: 28px;
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .dpad-btn:hover {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #60a5fa;
+    }
+    .dpad-btn.dpad-center {
+      background: #0f172a;
+      border-color: #3b82f6;
+      color: #60a5fa;
+      font-size: 12px;
+    }
+    .dpad-btn.dpad-center:hover {
+      background: #1d4ed8;
+      color: #ffffff;
+    }
+
+    .photo-presets {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      min-width: 160px;
+    }
+
+    .btn-preset {
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn-preset:hover {
+      background: #334155;
+      color: #ffffff;
+      border-color: #60a5fa;
+    }
+
+    .photo-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .sub-label {
+      font-size: 10.5px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    .toggle-group-sm .toggle-btn {
+      padding: 3px 8px;
+      font-size: 10.5px;
+    }
+
     /* ==========================================================================
        Стилі для друку та збереження в PDF (@media print)
        ========================================================================== */
@@ -1113,6 +1455,7 @@
       .item-delete-btn,
       .btn-add-item,
       .photo-actions,
+      .photo-drag-badge,
       .btn-edit-url,
       .screen-toolbar,
       .column-splitter,
@@ -1287,8 +1630,8 @@
       <aside class="sidebar" id="sidebar-col">
         <!-- Фото placeholder / аватар -->
         <div class="photo-wrapper excel-cell" id="cell-photo">
-          <div class="photo-container" id="photo-box" onclick="triggerPhotoUpload()" title="Натисніть, щоб завантажити власне фото">
-            <img id="user-photo-img" class="photo-preview" alt="Фото кандидата" />
+          <div class="photo-container" id="photo-box" onclick="onPhotoBoxClick(event)" title="Перетягуйте мишкою для центрування обличчя або натисніть для завантаження">
+            <img id="user-photo-img" class="photo-preview" alt="Фото кандидата" draggable="false" />
             <div id="photo-placeholder-content" class="photo-placeholder-content">
               <svg viewBox="0 0 24 24">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -1296,10 +1639,12 @@
               </svg>
               <span id="photo-label-text" contenteditable="true" spellcheck="false">Місце для фото</span>
             </div>
+            <div class="photo-drag-badge no-print" id="photo-drag-badge">✥ Центрувати</div>
           </div>
           <div class="photo-actions no-print">
-            <button class="btn-photo-mini" onclick="triggerPhotoUpload()">Змінити</button>
-            <button class="btn-photo-mini" id="btn-remove-photo" style="display: none;" onclick="removePhoto()">Видалити</button>
+            <button class="btn-photo-mini" onclick="triggerPhotoUpload()" title="Вибрати інше фото">📸 Змінити</button>
+            <button class="btn-photo-mini btn-photo-center" id="btn-adjust-photo" style="display: none;" onclick="openPhotoAdjustModal()" title="Налаштувати центрування обличчя та зум">🎯 Центрувати</button>
+            <button class="btn-photo-mini" id="btn-remove-photo" style="display: none;" onclick="removePhoto()" title="Видалити фото">🗑️</button>
           </div>
         </div>
 
@@ -1482,6 +1827,102 @@
     </div>
   </div>
 
+  <!-- Модальне вікно центрування та налаштування фото -->
+  <div class="url-modal-backdrop" id="photo-modal" onclick="closePhotoModalOnBackdrop(event)">
+    <div class="url-modal photo-adjust-modal">
+      <div class="photo-modal-header">
+        <h3>🎯 Центрування та зум фото</h3>
+        <button type="button" class="photo-modal-close" onclick="closePhotoModal()" title="Закрити вікно">×</button>
+      </div>
+
+      <div class="photo-modal-body">
+        <!-- Інтерактивне вікно позиціонування фото -->
+        <div class="photo-modal-viewport-wrap">
+          <div class="photo-modal-viewport" id="photo-modal-viewport" title="Перетягуйте мишкою для вирівнювання або крутіть коліщатко для зуму">
+            <img id="photo-modal-img" class="photo-modal-preview" alt="Перегляд позиціонування" draggable="false" />
+            <!-- Направляючі лінії для центрування обличчя -->
+            <div class="photo-face-guide">
+              <div class="face-guide-oval" title="Орієнтир для овалу обличчя"></div>
+              <div class="face-guide-cross-h"></div>
+              <div class="face-guide-cross-v"></div>
+            </div>
+          </div>
+          <div class="photo-modal-hint">🖱️ <strong>Перетягуйте фото</strong> мишкою всередині рамки для центрування або <strong>крутіть коліщатко</strong> для зміни масштабу.</div>
+        </div>
+
+        <!-- Панель керування: Зум, Зсув, Пресети, Форма -->
+        <div class="photo-modal-controls">
+          
+          <!-- Зум (Масштаб) -->
+          <div class="photo-control-group">
+            <div class="photo-control-header">
+              <label for="photo-zoom-slider">Масштаб (Зум):</label>
+              <span id="photo-zoom-display" class="photo-badge">100%</span>
+            </div>
+            <div class="photo-zoom-row">
+              <button type="button" class="btn-ctrl-step" onclick="stepPhotoZoom(-5)" title="Зменшити">−</button>
+              <input type="range" id="photo-zoom-slider" min="100" max="300" step="2" value="100" oninput="onPhotoZoomChange(this.value)">
+              <button type="button" class="btn-ctrl-step" onclick="stepPhotoZoom(5)" title="Збільшити">+</button>
+            </div>
+          </div>
+
+          <!-- Джойстик тонкого центрування -->
+          <div class="photo-control-group">
+            <div class="photo-control-header">
+              <label>Центрування обличчя:</label>
+              <span id="photo-coords-display" class="photo-badge">X: 0px, Y: 0px</span>
+            </div>
+            <div class="photo-dpad-wrap">
+              <div class="photo-dpad">
+                <button type="button" class="dpad-btn dpad-up" onclick="nudgePhoto(0, -6)" title="Вгору">▲</button>
+                <div class="dpad-mid-row">
+                  <button type="button" class="dpad-btn dpad-left" onclick="nudgePhoto(-6, 0)" title="Вліво">◀</button>
+                  <button type="button" class="dpad-btn dpad-center" onclick="resetPhotoOffset()" title="Точно по центру">🎯</button>
+                  <button type="button" class="dpad-btn dpad-right" onclick="nudgePhoto(6, 0)" title="Вправо">▶</button>
+                </div>
+                <button type="button" class="dpad-btn dpad-down" onclick="nudgePhoto(0, 6)" title="Вниз">▼</button>
+              </div>
+
+              <!-- Швидкі пресети -->
+              <div class="photo-presets">
+                <button type="button" class="btn-preset" onclick="applyPhotoPreset('face')" title="Оптимально центрувати портрет, щоб обличчя було повністю видно">👤 Обличчя вгорі (портрет)</button>
+                <button type="button" class="btn-preset" onclick="applyPhotoPreset('center')" title="Скинути зсув рівно по центру кадру">🎯 Точно по центру</button>
+                <button type="button" class="btn-preset" onclick="applyPhotoPreset('reset')" title="Скинути масштаб та зсув до 100%">🔄 Скинути все</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Форма та розмір аватара -->
+          <div class="photo-control-group">
+            <div class="photo-options-grid">
+              <div>
+                <label class="sub-label">Форма рамки:</label>
+                <div class="toggle-group toggle-group-sm">
+                  <button type="button" class="toggle-btn active" id="btn-shape-circle" onclick="setPhotoShape('circle')">⭕ Коло</button>
+                  <button type="button" class="toggle-btn" id="btn-shape-rounded" onclick="setPhotoShape('rounded')">🔲 Закруглена</button>
+                </div>
+              </div>
+              <div>
+                <label class="sub-label">Розмір на аркуші:</label>
+                <div class="toggle-group toggle-group-sm">
+                  <button type="button" class="toggle-btn" id="btn-size-sm" onclick="setPhotoSize(76)">76px</button>
+                  <button type="button" class="toggle-btn active" id="btn-size-md" onclick="setPhotoSize(90)">90px</button>
+                  <button type="button" class="toggle-btn" id="btn-size-lg" onclick="setPhotoSize(104)">104px</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="url-modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="closePhotoModal()">Закрити</button>
+        <button type="button" class="btn btn-primary" onclick="saveAndClosePhotoModal()">✓ Застосувати та зберегти</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ==========================================================================
     // ЛОГІКА РОЗТЯГУВАННЯ КЛІТИНОК (EXCEL-STYLE DRAG RESIZING) ТА ЗБЕРЕЖЕННЯ
@@ -1497,7 +1938,12 @@
       density: 'standard',
       sidebarWidth: 33,
       fontScale: 100,
-      showGrid: false
+      showGrid: false,
+      photoZoom: 100,
+      photoX: 0,
+      photoY: 0,
+      photoShape: 'circle',
+      photoSize: 90
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -1506,6 +1952,7 @@
       attachExcelResizers();
       attachAutoSaveListeners();
       initColumnSplitter();
+      initPhotoInteractions();
     });
 
     // ==========================================================================
@@ -1704,6 +2151,7 @@
           const fontSlider = document.getElementById('font-scale-slider');
           if (fontSlider) fontSlider.value = appSettings.fontScale || 100;
         }
+        applyPhotoStyles();
       } catch (e) {}
     }
 
@@ -1846,36 +2294,414 @@
       reader.readAsDataURL(file);
     }
 
+    function onPhotoBoxClick(event) {
+      // Якщо фото ще немає — запускаємо вибір файлу
+      const img = document.getElementById('user-photo-img');
+      const hasPhoto = img && img.src && img.style.display !== 'none';
+      if (!hasPhoto) {
+        triggerPhotoUpload();
+      }
+    }
+
     function applyPhotoSrc(src) {
       const img = document.getElementById('user-photo-img');
       const placeholder = document.getElementById('photo-placeholder-content');
       const removeBtn = document.getElementById('btn-remove-photo');
+      const adjustBtn = document.getElementById('btn-adjust-photo');
+      const photoBox = document.getElementById('photo-box');
+
       if (img && placeholder) {
         img.src = src;
         img.style.display = 'block';
         placeholder.style.display = 'none';
       }
-      if (removeBtn) {
-        removeBtn.style.display = 'inline-block';
+      if (photoBox) {
+        photoBox.classList.add('has-photo');
       }
+      if (adjustBtn) {
+        adjustBtn.style.display = 'inline-flex';
+      }
+      if (removeBtn) {
+        removeBtn.style.display = 'inline-flex';
+      }
+      applyPhotoStyles();
     }
 
     function removePhoto() {
       const img = document.getElementById('user-photo-img');
       const placeholder = document.getElementById('photo-placeholder-content');
       const removeBtn = document.getElementById('btn-remove-photo');
+      const adjustBtn = document.getElementById('btn-adjust-photo');
+      const photoBox = document.getElementById('photo-box');
       const fileInput = document.getElementById('photo-file-input');
+
       if (img && placeholder) {
         img.src = '';
         img.style.display = 'none';
         placeholder.style.display = 'flex';
       }
+      if (photoBox) {
+        photoBox.classList.remove('has-photo');
+      }
+      if (adjustBtn) adjustBtn.style.display = 'none';
       if (removeBtn) removeBtn.style.display = 'none';
       if (fileInput) fileInput.value = '';
+
       try {
         localStorage.removeItem(PHOTO_STORAGE_KEY);
       } catch (e) {}
       scheduleSave();
+    }
+
+    // Застосування стилів позиціонування, центрування та масштабу до фото
+    function applyPhotoStyles() {
+      const zoom = appSettings.photoZoom || 100;
+      const posX = appSettings.photoX || 0;
+      const posY = appSettings.photoY || 0;
+      const shape = appSettings.photoShape || 'circle';
+      const size = appSettings.photoSize || 90;
+
+      const radius = shape === 'rounded' ? '14px' : '50%';
+
+      // Оновлення CSS змінних на рівні документа
+      document.documentElement.style.setProperty('--photo-zoom', zoom);
+      document.documentElement.style.setProperty('--photo-x', posX + 'px');
+      document.documentElement.style.setProperty('--photo-y', posY + 'px');
+      document.documentElement.style.setProperty('--photo-radius', radius);
+      document.documentElement.style.setProperty('--photo-size', size + 'px');
+
+      // Оновлення елементів у модальному вікні
+      const zoomSlider = document.getElementById('photo-zoom-slider');
+      const zoomDisp = document.getElementById('photo-zoom-display');
+      const coordsDisp = document.getElementById('photo-coords-display');
+      const modalImg = document.getElementById('photo-modal-img');
+
+      if (zoomSlider) zoomSlider.value = zoom;
+      if (zoomDisp) zoomDisp.innerText = zoom + '%';
+      if (coordsDisp) coordsDisp.innerText = `X: ${Math.round(posX)}px, Y: ${Math.round(posY)}px`;
+
+      if (modalImg) {
+        modalImg.style.transform = `translate(${posX}px, ${posY}px) scale(${zoom / 100})`;
+      }
+
+      // Активні кнопки форми та розміру
+      const btnCircle = document.getElementById('btn-shape-circle');
+      const btnRounded = document.getElementById('btn-shape-rounded');
+      if (btnCircle && btnRounded) {
+        btnCircle.classList.toggle('active', shape === 'circle');
+        btnRounded.classList.toggle('active', shape === 'rounded');
+      }
+
+      ['sm', 'md', 'lg'].forEach(s => {
+        const b = document.getElementById(`btn-size-${s}`);
+        if (!b) return;
+        const targetVal = s === 'sm' ? 76 : (s === 'md' ? 90 : 104);
+        b.classList.toggle('active', size === targetVal);
+      });
+    }
+
+    // Ініціалізація інтерактивного перетягування (Drag-to-Center) для фото
+    function initPhotoInteractions() {
+      const photoBox = document.getElementById('photo-box');
+      const modalViewport = document.getElementById('photo-modal-viewport');
+
+      // 1. Інтерактивне перетягування безпосередньо в анкеті
+      if (photoBox) {
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let origX = 0;
+        let origY = 0;
+        let hasMoved = false;
+
+        photoBox.addEventListener('mousedown', (e) => {
+          const img = document.getElementById('user-photo-img');
+          const hasPhoto = img && img.src && img.style.display !== 'none';
+          if (!hasPhoto) return; // Якщо фото немає — клік перейде у вибір файлу
+
+          e.preventDefault();
+          isDragging = true;
+          hasMoved = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          origX = appSettings.photoX || 0;
+          origY = appSettings.photoY || 0;
+
+          photoBox.classList.add('dragging');
+          document.body.style.cursor = 'grabbing';
+          document.body.style.userSelect = 'none';
+
+          function onMouseMove(moveEvent) {
+            if (!isDragging) return;
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+
+            if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
+              hasMoved = true;
+            }
+
+            appSettings.photoX = Math.round(origX + deltaX);
+            appSettings.photoY = Math.round(origY + deltaY);
+            applyPhotoStyles();
+          }
+
+          function onMouseUp() {
+            if (!isDragging) return;
+            isDragging = false;
+            photoBox.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+
+            if (hasMoved) {
+              saveSettings();
+              scheduleSave();
+            }
+          }
+
+          window.addEventListener('mousemove', onMouseMove);
+          window.addEventListener('mouseup', onMouseUp);
+        });
+
+        // Зум коліщатком мишки прямо над фото
+        photoBox.addEventListener('wheel', (e) => {
+          const img = document.getElementById('user-photo-img');
+          const hasPhoto = img && img.src && img.style.display !== 'none';
+          if (!hasPhoto) return;
+
+          e.preventDefault();
+          const step = e.deltaY < 0 ? 5 : -5;
+          const currentZoom = appSettings.photoZoom || 100;
+          appSettings.photoZoom = Math.min(300, Math.max(100, currentZoom + step));
+          applyPhotoStyles();
+          saveSettings();
+          scheduleSave();
+        }, { passive: false });
+      }
+
+      // 2. Інтерактивне перетягування у модальному вікні центрування
+      if (modalViewport) {
+        let isModalDragging = false;
+        let mStartX = 0;
+        let mStartY = 0;
+        let mOrigX = 0;
+        let mOrigY = 0;
+
+        modalViewport.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          isModalDragging = true;
+          mStartX = e.clientX;
+          mStartY = e.clientY;
+          mOrigX = appSettings.photoX || 0;
+          mOrigY = appSettings.photoY || 0;
+
+          modalViewport.classList.add('dragging');
+          document.body.style.cursor = 'grabbing';
+          document.body.style.userSelect = 'none';
+
+          function onModalMove(moveEvent) {
+            if (!isModalDragging) return;
+            const deltaX = moveEvent.clientX - mStartX;
+            const deltaY = moveEvent.clientY - mStartY;
+
+            appSettings.photoX = Math.round(mOrigX + deltaX);
+            appSettings.photoY = Math.round(mOrigY + deltaY);
+            applyPhotoStyles();
+          }
+
+          function onModalUp() {
+            isModalDragging = false;
+            modalViewport.classList.remove('dragging');
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            window.removeEventListener('mousemove', onModalMove);
+            window.removeEventListener('mouseup', onModalUp);
+            saveSettings();
+            scheduleSave();
+          }
+
+          window.addEventListener('mousemove', onModalMove);
+          window.addEventListener('mouseup', onModalUp);
+        });
+
+        modalViewport.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const step = e.deltaY < 0 ? 5 : -5;
+          const currentZoom = appSettings.photoZoom || 100;
+          appSettings.photoZoom = Math.min(300, Math.max(100, currentZoom + step));
+          applyPhotoStyles();
+          saveSettings();
+        }, { passive: false });
+      }
+    }
+
+    // Модальне вікно: відкриття та закриття
+    function openPhotoAdjustModal() {
+      const img = document.getElementById('user-photo-img');
+      const modalImg = document.getElementById('photo-modal-img');
+      const modal = document.getElementById('photo-modal');
+      if (!img || !img.src) return;
+
+      if (modalImg) {
+        modalImg.src = img.src;
+      }
+      applyPhotoStyles();
+      if (modal) modal.classList.add('open');
+    }
+
+    function closePhotoModal() {
+      const modal = document.getElementById('photo-modal');
+      if (modal) modal.classList.remove('open');
+    }
+
+    function closePhotoModalOnBackdrop(event) {
+      if (event.target && event.target.id === 'photo-modal') {
+        closePhotoModal();
+      }
+    }
+
+    function saveAndClosePhotoModal() {
+      saveSettings();
+      scheduleSave();
+      closePhotoModal();
+    }
+
+    // Керування зумом у модалці
+    function onPhotoZoomChange(val) {
+      appSettings.photoZoom = parseInt(val, 10) || 100;
+      applyPhotoStyles();
+      saveSettings();
+    }
+
+    function stepPhotoZoom(delta) {
+      const cur = appSettings.photoZoom || 100;
+      appSettings.photoZoom = Math.min(300, Math.max(100, cur + delta));
+      applyPhotoStyles();
+      saveSettings();
+    }
+
+    // Керування зсувом (джойстик)
+    function nudgePhoto(dx, dy) {
+      appSettings.photoX = (appSettings.photoX || 0) + dx;
+      appSettings.photoY = (appSettings.photoY || 0) + dy;
+      applyPhotoStyles();
+      saveSettings();
+    }
+
+    function resetPhotoOffset() {
+      appSettings.photoX = 0;
+      appSettings.photoY = 0;
+      applyPhotoStyles();
+      saveSettings();
+    }
+
+    // Швидкі пресети позиціонування
+    function applyPhotoPreset(preset) {
+      if (preset === 'face') {
+        // Оптимальне кадрування для портретів, де обличчя займає верхню половину фото
+        appSettings.photoZoom = 125;
+        appSettings.photoX = 0;
+        appSettings.photoY = 18;
+      } else if (preset === 'center') {
+        appSettings.photoX = 0;
+        appSettings.photoY = 0;
+      } else if (preset === 'reset') {
+        appSettings.photoZoom = 100;
+        appSettings.photoX = 0;
+        appSettings.photoY = 0;
+      }
+      applyPhotoStyles();
+      saveSettings();
+      scheduleSave();
+    }
+
+    // Налаштування форми та розміру
+    function setPhotoShape(shape) {
+      appSettings.photoShape = shape;
+      applyPhotoStyles();
+      saveSettings();
+      scheduleSave();
+    }
+
+    function setPhotoSize(size) {
+      appSettings.photoSize = parseInt(size, 10) || 90;
+      applyPhotoStyles();
+      saveSettings();
+      scheduleSave();
+    }
+
+    // Генерація обрізаного та відцентрованого зображення для бездоганного експорту в PPTX
+    function getCroppedPhotoDataUrl() {
+      const img = document.getElementById('user-photo-img');
+      if (!img || !img.src || img.style.display === 'none') return Promise.resolve(null);
+
+      return new Promise((resolve) => {
+        const tempImg = new Image();
+        tempImg.crossOrigin = 'anonymous';
+        tempImg.onload = function() {
+          try {
+            const canvas = document.createElement('canvas');
+            const size = 500; // Висока роздільна здатність для презентації
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return resolve(img.src);
+
+            const natW = tempImg.naturalWidth || tempImg.width;
+            const natH = tempImg.naturalHeight || tempImg.height;
+
+            // Емуляція CSS object-fit: cover
+            const coverScale = Math.max(size / natW, size / natH);
+            const baseW = natW * coverScale;
+            const baseH = natH * coverScale;
+
+            const zoom = (appSettings.photoZoom || 100) / 100;
+            const finalW = baseW * zoom;
+            const finalH = baseH * zoom;
+
+            const displaySize = appSettings.photoSize || 90;
+            const scaleFactor = size / displaySize;
+            const offsetX = (appSettings.photoX || 0) * scaleFactor;
+            const offsetY = (appSettings.photoY || 0) * scaleFactor;
+
+            const drawX = (size - finalW) / 2 + offsetX;
+            const drawY = (size - finalH) / 2 + offsetY;
+
+            // Маскування форми (коло або закруглений прямокутник)
+            if (appSettings.photoShape === 'circle') {
+              ctx.beginPath();
+              ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+              ctx.closePath();
+              ctx.clip();
+            } else if (appSettings.photoShape === 'rounded') {
+              const r = 50;
+              ctx.beginPath();
+              ctx.moveTo(r, 0);
+              ctx.lineTo(size - r, 0);
+              ctx.quadraticCurveTo(size, 0, size, r);
+              ctx.lineTo(size, size - r);
+              ctx.quadraticCurveTo(size, size, size - r, size);
+              ctx.lineTo(r, size);
+              ctx.quadraticCurveTo(0, size, 0, size - r);
+              ctx.lineTo(0, r);
+              ctx.quadraticCurveTo(0, 0, r, 0);
+              ctx.closePath();
+              ctx.clip();
+            }
+
+            ctx.drawImage(tempImg, drawX, drawY, finalW, finalH);
+            resolve(canvas.toDataURL('image/png'));
+          } catch (err) {
+            console.warn('Canvas export fallback:', err);
+            resolve(img.src);
+          }
+        };
+        tempImg.onerror = function() {
+          resolve(img.src);
+        };
+        tempImg.src = img.src;
+      });
     }
 
     // Перемикання режиму перегляду
@@ -2086,22 +2912,24 @@
           line: { color: 'E2E8F0', width: 1 }
         });
 
-        // 2. ФОТОГРАФІЯ КАНДИДАТА
+        // 2. ФОТОГРАФІЯ КАНДИДАТА З УРАХУВАННЯМ ЦЕНТРУВАННЯ ТА ЗУМУ
         const photoImg = document.getElementById('user-photo-img');
         const hasPhoto = photoImg && photoImg.src && (photoImg.src.startsWith('data:image') || photoImg.src.startsWith('http')) && photoImg.style.display !== 'none';
-        const photoSize = 1.25;
+        const photoSizeInInches = +( (appSettings.photoSize || 90) / 72 ).toFixed(2);
+        const photoSize = Math.max(0.95, Math.min(1.45, photoSizeInInches));
         const photoX = +(sidebarW / 2 - photoSize / 2).toFixed(2);
-        const photoY = 0.45;
+        const photoY = 0.40;
 
         if (hasPhoto) {
           try {
+            const croppedPhotoSrc = await getCroppedPhotoDataUrl();
             slide.addImage({
-              data: photoImg.src,
+              data: croppedPhotoSrc || photoImg.src,
               x: photoX,
               y: photoY,
               w: photoSize,
               h: photoSize,
-              rounding: true
+              rounding: appSettings.photoShape !== 'rounded'
             });
           } catch (imgErr) {
             console.warn('Не вдалося додати фото через addImage, малюємо рамку:', imgErr);
@@ -2532,7 +3360,8 @@
     }
 
     function drawPhotoPlaceholder(slide, pptx, photoX, photoY, photoSize) {
-      slide.addShape(pptx.ShapeType.ellipse, {
+      const shapeType = appSettings.photoShape === 'rounded' ? pptx.ShapeType.roundRect : pptx.ShapeType.ellipse;
+      slide.addShape(shapeType, {
         x: photoX,
         y: photoY,
         w: photoSize,
@@ -2542,7 +3371,7 @@
       });
       slide.addText("Місце для\nфото", {
         x: photoX,
-        y: photoY + 0.35,
+        y: photoY + (photoSize * 0.28),
         w: photoSize,
         h: 0.55,
         align: "center",
