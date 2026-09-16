@@ -4,9 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Резюме — Шеховцов Максим Артемович</title>
-  <meta name="description" content="Інтерактивне резюме формату А4 для фахівця з кібербезпеки з можливістю розтягування клітинок як в Excel та збереженням у PDF.">
+  <meta name="description" content="Інтерактивне резюме формату А4 для фахівця з кібербезпеки з можливістю розтягування клітинок як в Excel та повноцінним експортом у PowerPoint (PPTX) з інтерактивним текстом.">
   <meta property="og:title" content="Резюме — Шеховцов Максим Артемович">
-  <meta property="og:description" content="Інтерактивне резюме формату А4 для фахівця з кібербезпеки з можливістю розтягування клітинок як в Excel та збереженням у PDF.">
+  <meta property="og:description" content="Інтерактивне резюме формату А4 для фахівця з кібербезпеки з можливістю розтягування клітинок як в Excel та повноцінним експортом у PowerPoint (PPTX) з інтерактивним текстом.">
+  <!-- Бібліотека PptxGenJS для створення PowerPoint презентацій з інтерактивним текстом -->
+  <script src="/pptxgen.bundle.js"></script>
+  <script>
+    if (typeof PptxGenJS === 'undefined') {
+      var _s = document.createElement('script');
+      _s.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+      document.head.appendChild(_s);
+    }
+  </script>
   <style>
     /* ==========================================================================
        CSS Змінні та налаштування розмірів
@@ -236,6 +245,85 @@
       background: #1f2937;
       color: #f87171;
       border-color: #ef4444;
+    }
+
+    .btn-pptx {
+      background: #c2410c;
+      color: #fff7ed;
+      border-color: #ea580c;
+      font-weight: 600;
+    }
+    .btn-pptx:hover {
+      background: #ea580c;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(234, 88, 12, 0.45);
+    }
+    .btn-pptx:active {
+      background: #9a3412;
+    }
+    .btn-pptx.loading {
+      opacity: 0.7;
+      cursor: wait;
+      pointer-events: none;
+    }
+
+    /* Спливаюче повідомлення про успішний експорт PPTX */
+    .pptx-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      border: 1px solid #ea580c;
+      border-left: 4px solid #ea580c;
+      color: #f8fafc;
+      padding: 14px 18px;
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 5000;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      max-width: 440px;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+    .pptx-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .toast-icon {
+      font-size: 24px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .toast-content {
+      flex: 1;
+    }
+    .toast-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fed7aa;
+      margin-bottom: 4px;
+    }
+    .toast-desc {
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+    .toast-close {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 0 0 8px;
+    }
+    .toast-close:hover {
+      color: #ffffff;
     }
 
     .save-status {
@@ -1150,6 +1238,13 @@
           </svg>
           Друк / Зберегти в PDF
         </button>
+
+        <button class="btn btn-pptx" id="btn-export-pptx" onclick="exportToPPTX()" title="Експортувати в слайд PowerPoint (.pptx) з повністю інтерактивним та редагованим текстом">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 11.5v-7h3c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5h-1.5v2H10zm1.5-3.5h1.5c.55 0 1-.45 1-1s-.45-1-1-1h-1.5v2z"/>
+          </svg>
+          <span id="pptx-btn-text">Експорт в PowerPoint (.pptx)</span>
+        </button>
       </div>
     </div>
 
@@ -1926,7 +2021,582 @@
       }
       closeUrlModal();
     }
+
+    // ==========================================================================
+    // ПОВНОЦІННИЙ ЕКСПОРТ У POWERPOINT (.PPTX) З ІНТЕРАКТИВНИМ ТЕКСТОМ
+    // ==========================================================================
+    async function exportToPPTX() {
+      const btn = document.getElementById('btn-export-pptx');
+      const btnText = document.getElementById('pptx-btn-text');
+      const originalText = btnText ? btnText.innerText : 'Експорт в PowerPoint (.pptx)';
+      
+      try {
+        if (btn) btn.classList.add('loading');
+        if (btnText) btnText.innerText = 'Створення PPTX...';
+
+        // Перевіряємо чи завантажена бібліотека PptxGenJS
+        if (typeof PptxGenJS === 'undefined') {
+          await loadPptxGenJsScript();
+        }
+
+        const pptx = new (window.PptxGenJS || PptxGenJS)();
+        pptx.author = "Шеховцов Максим Артемович";
+        pptx.company = "ХНУВС — Факультет кібербезпеки";
+        pptx.title = "Резюме — Шеховцов Максим Артемович";
+        pptx.subject = "Інтерактивне резюме формату А4 (кібербезпека, OSINT, криптографія)";
+
+        // Встановлюємо точний формат А4 книжкової орієнтації: 8.27 x 11.69 дюймів (210 x 297 мм)
+        pptx.defineLayout({ name: 'A4_PORTRAIT', width: 8.27, height: 11.69 });
+        pptx.layout = 'A4_PORTRAIT';
+
+        const slide = pptx.addSlide();
+
+        // 1. Геометрія колонок на основі поточних налаштувань користувача
+        const sidebarPct = (appSettings.sidebarWidth || 33) / 100;
+        const sidebarW = +(8.27 * sidebarPct).toFixed(2);
+        const mainX = sidebarW;
+        const mainW = +(8.27 - sidebarW).toFixed(2);
+
+        // Ліва підкладка сайдбару (темно-синій фон #0C1829)
+        slide.addShape(pptx.ShapeType.rect, {
+          x: 0,
+          y: 0,
+          w: sidebarW,
+          h: 11.69,
+          fill: { color: '0C1829' },
+          line: { color: '16263D', width: 1 }
+        });
+
+        // Права підкладка основної частини (чистий білий фон)
+        slide.addShape(pptx.ShapeType.rect, {
+          x: mainX,
+          y: 0,
+          w: mainW,
+          h: 11.69,
+          fill: { color: 'FFFFFF' },
+          line: { color: 'FFFFFF', width: 0 }
+        });
+
+        // Вертикальна межа між колонками
+        slide.addShape(pptx.ShapeType.line, {
+          x: mainX,
+          y: 0,
+          w: 0,
+          h: 11.69,
+          line: { color: 'E2E8F0', width: 1 }
+        });
+
+        // 2. ФОТОГРАФІЯ КАНДИДАТА
+        const photoImg = document.getElementById('user-photo-img');
+        const hasPhoto = photoImg && photoImg.src && (photoImg.src.startsWith('data:image') || photoImg.src.startsWith('http')) && photoImg.style.display !== 'none';
+        const photoSize = 1.25;
+        const photoX = +(sidebarW / 2 - photoSize / 2).toFixed(2);
+        const photoY = 0.45;
+
+        if (hasPhoto) {
+          try {
+            slide.addImage({
+              data: photoImg.src,
+              x: photoX,
+              y: photoY,
+              w: photoSize,
+              h: photoSize,
+              rounding: true
+            });
+          } catch (imgErr) {
+            console.warn('Не вдалося додати фото через addImage, малюємо рамку:', imgErr);
+            drawPhotoPlaceholder(slide, pptx, photoX, photoY, photoSize);
+          }
+        } else {
+          drawPhotoPlaceholder(slide, pptx, photoX, photoY, photoSize);
+        }
+
+        // 3. САЙДБАР: КОНТАКТИ, НАВИЧКИ, ПОСИЛАННЯ (УСІ ТЕКСТИ ІНТЕРАКТИВНІ)
+        const sidePad = 0.28;
+        const sideContentW = +(sidebarW - sidePad * 2).toFixed(2);
+        let curSideY = photoY + photoSize + 0.30;
+
+        // --- Блок контактів ---
+        const contactsTitleEl = document.querySelector('#section-contacts .sidebar-section-title');
+        const contactsTitle = contactsTitleEl ? contactsTitleEl.innerText.trim().toUpperCase() : 'КОНТАКТИ';
+        slide.addText(contactsTitle, {
+          x: sidePad,
+          y: curSideY,
+          w: sideContentW,
+          h: 0.24,
+          fontSize: 10,
+          bold: true,
+          color: 'FFFFFF',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addShape(pptx.ShapeType.line, {
+          x: sidePad,
+          y: curSideY + 0.25,
+          w: sideContentW,
+          h: 0,
+          line: { color: '2563EB', width: 1.5 }
+        });
+        curSideY += 0.32;
+
+        const contactItems = document.querySelectorAll('#contact-list .contact-item');
+        contactItems.forEach(item => {
+          const lblEl = item.querySelector('.contact-label');
+          const valEl = item.querySelector('.contact-value');
+          const lbl = lblEl ? lblEl.innerText.trim().toUpperCase() : '';
+          const val = valEl ? valEl.innerText.trim() : '';
+          const href = valEl && valEl.getAttribute('href') ? valEl.getAttribute('href') : '';
+
+          const runs = [];
+          if (lbl) {
+            runs.push({ text: lbl + '\n', options: { fontSize: 7.5, bold: true, color: '94A3B8', fontFace: 'Arial' } });
+          }
+          runs.push({
+            text: val,
+            options: {
+              fontSize: 9,
+              color: 'F1F5F9',
+              underline: true,
+              fontFace: 'Arial',
+              hyperlink: (href && !href.startsWith('tel:')) ? { url: href } : undefined
+            }
+          });
+
+          slide.addText(runs, {
+            x: sidePad,
+            y: curSideY,
+            w: sideContentW,
+            h: 0.38,
+            margin: 0
+          });
+          curSideY += 0.40;
+        });
+        curSideY += 0.12;
+
+        // --- Блок навичок ---
+        const skillsTitleEl = document.querySelector('#section-skills .sidebar-section-title');
+        const skillsTitle = skillsTitleEl ? skillsTitleEl.innerText.trim().toUpperCase() : 'НАВИЧКИ';
+        slide.addText(skillsTitle, {
+          x: sidePad,
+          y: curSideY,
+          w: sideContentW,
+          h: 0.24,
+          fontSize: 10,
+          bold: true,
+          color: 'FFFFFF',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addShape(pptx.ShapeType.line, {
+          x: sidePad,
+          y: curSideY + 0.25,
+          w: sideContentW,
+          h: 0,
+          line: { color: '2563EB', width: 1.5 }
+        });
+        curSideY += 0.32;
+
+        const skillBlocks = document.querySelectorAll('#skills-group .skill-block');
+        skillBlocks.forEach(block => {
+          const nmEl = block.querySelector('.skill-name');
+          const dsEl = block.querySelector('.skill-desc');
+          const nm = nmEl ? nmEl.innerText.trim() : '';
+          const ds = dsEl ? dsEl.innerText.trim() : '';
+
+          slide.addText([
+            { text: nm + '\n', options: { fontSize: 9.5, bold: true, color: '60A5FA', fontFace: 'Arial' } },
+            { text: ds, options: { fontSize: 8.5, color: 'CBD5E1', fontFace: 'Arial' } }
+          ], {
+            x: sidePad,
+            y: curSideY,
+            w: sideContentW,
+            h: 0.46,
+            margin: 0
+          });
+          curSideY += 0.50;
+        });
+        curSideY += 0.12;
+
+        // --- Блок посилань ---
+        const linksTitleEl = document.querySelector('#section-links .sidebar-section-title');
+        const linksTitle = linksTitleEl ? linksTitleEl.innerText.trim().toUpperCase() : 'ПОСИЛАННЯ';
+        slide.addText(linksTitle, {
+          x: sidePad,
+          y: curSideY,
+          w: sideContentW,
+          h: 0.24,
+          fontSize: 10,
+          bold: true,
+          color: 'FFFFFF',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addShape(pptx.ShapeType.line, {
+          x: sidePad,
+          y: curSideY + 0.25,
+          w: sideContentW,
+          h: 0,
+          line: { color: '2563EB', width: 1.5 }
+        });
+        curSideY += 0.32;
+
+        const linkItems = document.querySelectorAll('#links-list .link-item');
+        linkItems.forEach(item => {
+          const ttlEl = item.querySelector('.link-title');
+          const urlEl = item.querySelector('.link-url');
+          const ttl = ttlEl ? ttlEl.innerText.trim().toUpperCase() : '';
+          const urlTxt = urlEl ? urlEl.innerText.trim() : '';
+          const href = urlEl && urlEl.getAttribute('href') ? urlEl.getAttribute('href') : '';
+
+          slide.addText([
+            { text: ttl + '\n', options: { fontSize: 7.5, bold: true, color: '94A3B8', fontFace: 'Arial' } },
+            { text: urlTxt, options: { fontSize: 8.5, color: '93C5FD', underline: true, fontFace: 'Arial', hyperlink: href ? { url: href } : undefined } }
+          ], {
+            x: sidePad,
+            y: curSideY,
+            w: sideContentW,
+            h: 0.38,
+            margin: 0
+          });
+          curSideY += 0.40;
+        });
+
+        // 4. ОСНОВНА ЧАСТИНА (ПРАВА КОЛОНКА)
+        const mainPad = 0.38;
+        const mX = +(mainX + mainPad).toFixed(2);
+        const mW = +(mainW - mainPad * 2).toFixed(2);
+        let curMainY = 0.45;
+
+        // ПІБ кандидата
+        const nameEl = document.querySelector('.candidate-name');
+        const nameText = nameEl ? nameEl.innerText.replace(/[\r\n]+/g, '\n').trim() : 'ШЕХОВЦОВ МАКСИМ АРТЕМОВИЧ';
+        slide.addText(nameText, {
+          x: mX,
+          y: curMainY,
+          w: mW,
+          h: 0.85,
+          fontSize: 22,
+          bold: true,
+          color: '0C1829',
+          fontFace: 'Arial',
+          margin: 0,
+          breakLine: true
+        });
+        curMainY += 0.90;
+
+        // Статус / посада
+        const statusEl = document.querySelector('.candidate-status');
+        if (statusEl && statusEl.innerText.trim()) {
+          slide.addText(statusEl.innerText.trim(), {
+            x: mX,
+            y: curMainY,
+            w: mW,
+            h: 0.28,
+            fontSize: 11,
+            bold: true,
+            color: '1D4ED8',
+            fontFace: 'Arial',
+            margin: 0
+          });
+          curMainY += 0.34;
+        }
+
+        // Лінія під заголовком
+        slide.addShape(pptx.ShapeType.line, {
+          x: mX,
+          y: curMainY,
+          w: mW,
+          h: 0,
+          line: { color: '0C1829', width: 2 }
+        });
+        curMainY += 0.24;
+
+        // --- Блок: Цілі ---
+        const goalsTitleEl = document.querySelector('#section-goals .section-title');
+        const goalsTitle = goalsTitleEl ? goalsTitleEl.innerText.trim().toUpperCase() : 'ЦІЛІ ТА ПРОФЕСІЙНИЙ ПРОФІЛЬ';
+        const goalsTextEl = document.querySelector('#section-goals .goals-text');
+        const goalsText = goalsTextEl ? goalsTextEl.innerText.trim() : '';
+
+        slide.addShape(pptx.ShapeType.rect, {
+          x: mX,
+          y: curMainY + 0.05,
+          w: 0.08,
+          h: 0.08,
+          fill: { color: '1D4ED8' },
+          line: { color: '1D4ED8' }
+        });
+        slide.addText(goalsTitle, {
+          x: mX + 0.15,
+          y: curMainY,
+          w: mW - 0.15,
+          h: 0.24,
+          fontSize: 10.5,
+          bold: true,
+          color: '0C1829',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addShape(pptx.ShapeType.line, {
+          x: mX,
+          y: curMainY + 0.24,
+          w: mW,
+          h: 0,
+          line: { color: '0C1829', width: 1 }
+        });
+        curMainY += 0.32;
+
+        if (goalsText) {
+          slide.addText(goalsText, {
+            x: mX,
+            y: curMainY,
+            w: mW,
+            h: 0.65,
+            fontSize: 9.5,
+            color: '334155',
+            fontFace: 'Arial',
+            align: 'justify',
+            margin: 0
+          });
+          curMainY += 0.75;
+        }
+
+        // --- Блок: Освіта ---
+        const eduTitleEl = document.querySelector('#section-education .section-title');
+        const eduTitle = eduTitleEl ? eduTitleEl.innerText.trim().toUpperCase() : 'ОСВІТА';
+
+        slide.addShape(pptx.ShapeType.rect, {
+          x: mX,
+          y: curMainY + 0.05,
+          w: 0.08,
+          h: 0.08,
+          fill: { color: '1D4ED8' },
+          line: { color: '1D4ED8' }
+        });
+        slide.addText(eduTitle, {
+          x: mX + 0.15,
+          y: curMainY,
+          w: mW - 0.15,
+          h: 0.24,
+          fontSize: 10.5,
+          bold: true,
+          color: '0C1829',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addShape(pptx.ShapeType.line, {
+          x: mX,
+          y: curMainY + 0.24,
+          w: mW,
+          h: 0,
+          line: { color: '0C1829', width: 1 }
+        });
+        curMainY += 0.32;
+
+        const eduItems = document.querySelectorAll('#education-group .education-item');
+        eduItems.forEach(item => {
+          const tEl = item.querySelector('.edu-title');
+          const sEl = item.querySelector('.edu-sub');
+          const pEl = item.querySelector('.edu-period');
+          const nEl = item.querySelector('.edu-note');
+
+          const runs = [];
+          if (tEl && tEl.innerText.trim()) {
+            runs.push({ text: tEl.innerText.trim() + '\n', options: { fontSize: 10.5, bold: true, color: '0F172A', fontFace: 'Arial' } });
+          }
+          if (sEl && sEl.innerText.trim()) {
+            runs.push({ text: sEl.innerText.trim() + '\n', options: { fontSize: 9.5, bold: true, color: '2563EB', fontFace: 'Arial' } });
+          }
+          if (pEl && pEl.innerText.trim()) {
+            runs.push({ text: pEl.innerText.trim() + '\n', options: { fontSize: 8.5, color: '64748B', fontFace: 'Arial' } });
+          }
+          if (nEl && nEl.innerText.trim()) {
+            runs.push({ text: nEl.innerText.trim(), options: { fontSize: 9, color: '475569', fontFace: 'Arial' } });
+          }
+
+          slide.addText(runs, {
+            x: mX,
+            y: curMainY,
+            w: mW,
+            h: 0.85,
+            margin: 0
+          });
+          curMainY += 0.95;
+        });
+
+        // --- Блок: Досягнення ---
+        const achTitleEl = document.querySelector('#section-achievements .section-title');
+        const achTitle = achTitleEl ? achTitleEl.innerText.trim().toUpperCase() : 'ДОСЯГНЕННЯ ТА ПРАКТИЧНИЙ ДОСВІД';
+
+        slide.addShape(pptx.ShapeType.rect, {
+          x: mX,
+          y: curMainY + 0.05,
+          w: 0.08,
+          h: 0.08,
+          fill: { color: '1D4ED8' },
+          line: { color: '1D4ED8' }
+        });
+        slide.addText(achTitle, {
+          x: mX + 0.15,
+          y: curMainY,
+          w: mW - 0.15,
+          h: 0.24,
+          fontSize: 10.5,
+          bold: true,
+          color: '0C1829',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addShape(pptx.ShapeType.line, {
+          x: mX,
+          y: curMainY + 0.24,
+          w: mW,
+          h: 0,
+          line: { color: '0C1829', width: 1 }
+        });
+        curMainY += 0.32;
+
+        const achItems = document.querySelectorAll('#achievements-list .achievement-item');
+        achItems.forEach(item => {
+          const strongEl = item.querySelector('strong');
+          const runs = [];
+
+          if (strongEl) {
+            const strongText = strongEl.innerText.trim();
+            const fullText = item.innerText.replace(strongText, '').replace(/^[:\s]+/, '').trim();
+            runs.push({ text: strongText + ' ', options: { bold: true, color: '0F172A', fontSize: 9.5, fontFace: 'Arial' } });
+            runs.push({ text: fullText, options: { bold: false, color: '334155', fontSize: 9.5, fontFace: 'Arial' } });
+          } else {
+            runs.push({ text: item.innerText.trim(), options: { bold: false, color: '334155', fontSize: 9.5, fontFace: 'Arial' } });
+          }
+
+          slide.addText(runs, {
+            x: mX,
+            y: curMainY,
+            w: mW,
+            h: 0.44,
+            bullet: { code: '25AA', color: '1D4ED8' },
+            margin: 0
+          });
+          curMainY += 0.48;
+        });
+
+        // --- Колонтитул внизу сторінки ---
+        const footerSpans = document.querySelectorAll('#cell-footer span');
+        const footerLeft = footerSpans[0] ? footerSpans[0].innerText.trim() : 'СПЕЦІАЛІЗОВАНЕ РЕЗЮМЕ • СТАНДАРТ СИЛОВИХ ВІДОМСТВ';
+        const footerRight = footerSpans[1] ? footerSpans[1].innerText.trim() : 'ФОРМАТ A4 • 1 СТОРІНКА';
+
+        slide.addShape(pptx.ShapeType.line, {
+          x: mX,
+          y: 11.20,
+          w: mW,
+          h: 0,
+          line: { color: 'E2E8F0', width: 1 }
+        });
+        slide.addText(footerLeft, {
+          x: mX,
+          y: 11.25,
+          w: mW * 0.6,
+          h: 0.22,
+          fontSize: 7.5,
+          color: '94A3B8',
+          fontFace: 'Arial',
+          margin: 0
+        });
+        slide.addText(footerRight, {
+          x: mX + mW * 0.6,
+          y: 11.25,
+          w: mW * 0.4,
+          h: 0.22,
+          fontSize: 7.5,
+          color: '94A3B8',
+          fontFace: 'Arial',
+          align: 'right',
+          margin: 0
+        });
+
+        // 5. ГЕНЕРАЦІЯ ТА ЗБЕРЕЖЕННЯ ФАЙЛУ
+        const rawFirstWord = nameText.split('\n')[0] || 'Шеховцов';
+        const cleanName = rawFirstWord.replace(/[^\wа-яА-ЯіїєґІЇЄҐ]/g, '_');
+        const fileName = `Резюме_${cleanName}.pptx`;
+
+        await pptx.writeFile({ fileName });
+
+        showPptxToast();
+      } catch (err) {
+        console.error('Помилка генерації PPTX:', err);
+        alert('Помилка під час створення PowerPoint файлу: ' + (err.message || err));
+      } finally {
+        if (btn) btn.classList.remove('loading');
+        if (btnText) btnText.innerText = originalText;
+      }
+    }
+
+    function drawPhotoPlaceholder(slide, pptx, photoX, photoY, photoSize) {
+      slide.addShape(pptx.ShapeType.ellipse, {
+        x: photoX,
+        y: photoY,
+        w: photoSize,
+        h: photoSize,
+        fill: { color: '1E293B' },
+        line: { color: '334155', width: 2 }
+      });
+      slide.addText("Місце для\nфото", {
+        x: photoX,
+        y: photoY + 0.35,
+        w: photoSize,
+        h: 0.55,
+        align: "center",
+        fontSize: 9,
+        color: "94A3B8",
+        bold: true,
+        fontFace: "Arial"
+      });
+    }
+
+    function loadPptxGenJsScript() {
+      return new Promise((resolve, reject) => {
+        if (typeof PptxGenJS !== 'undefined') return resolve();
+        const script = document.createElement('script');
+        script.src = '/pptxgen.bundle.js';
+        script.onload = () => resolve();
+        script.onerror = () => {
+          const cdn = document.createElement('script');
+          cdn.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+          cdn.onload = () => resolve();
+          cdn.onerror = () => reject(new Error('Не вдалося завантажити бібліотеку PptxGenJS'));
+          document.head.appendChild(cdn);
+        };
+        document.head.appendChild(script);
+      });
+    }
+
+    function showPptxToast() {
+      const toast = document.getElementById('pptx-toast');
+      if (toast) {
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 8000);
+      }
+    }
+
+    function closePptxToast() {
+      const toast = document.getElementById('pptx-toast');
+      if (toast) {
+        toast.classList.remove('show');
+      }
+    }
   </script>
+
+  <!-- Спливаюче сповіщення про завантаження PPTX з інтерактивним текстом -->
+  <div id="pptx-toast" class="pptx-toast no-print">
+    <div class="toast-icon">📊</div>
+    <div class="toast-content">
+      <div class="toast-title">Файл PowerPoint (.pptx) успішно створено!</div>
+      <div class="toast-desc">Усі тексти та блоки є повністю інтерактивними — будь-хто може відкрити файл у Microsoft PowerPoint, Google Презентаціях чи LibreOffice і вільно редагувати будь-яке слово, заголовок чи посилання.</div>
+    </div>
+    <button class="toast-close" onclick="closePptxToast()" title="Закрити">×</button>
+  </div>
 
 </body>
 </html>
